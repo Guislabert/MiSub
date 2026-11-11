@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { expandIncludeAllProxies } from '../../functions/modules/subscription/expand-include-all-proxies.js';
 
 const NODES = [
-    '🇺🇸US-A100-DMC-LAX-01',
-    '🇺🇸US-A100-DMC-LAX-02',
-    '🇩🇪DE-C300-NCG-NUE-01',
-    '🇩🇪DE-C300-NCG-NUE-02',
-    '🇺🇸US-D400-OCI-SJC-01',
-    '🇦🇺AU-E500-AWS-SYD-01',
-    '🇭🇰HK-F600-ZTN-HKG-01',
+    '🇺🇸US-A100-AAA-BBB-01',
+    '🇺🇸US-A100-AAA-BBB-02',
+    '🇩🇪DE-C300-CCC-DDD-01',
+    '🇩🇪DE-C300-CCC-DDD-02',
+    '🇺🇸US-D400-EEE-FFF-01',
+    '🇦🇺AU-E500-GGG-HHH-01',
+    '🇭🇰HK-F600-III-JJJ-01',
 ];
 
 const makeConfig = (groups) => ({ 'proxy-groups': groups, rules: ['MATCH,🌏️Main Proxy'] });

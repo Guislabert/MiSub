@@ -6,24 +6,24 @@ import {
     resolveAddFlagEmoji,
 } from '../../functions/modules/subscription/main-handler.js';
 
-const NODE = 'trojan://pass@example.com:443#US-DMC-LAX-01';
+const NODE = 'trojan://pass@example.com:443#US-AAA-BBB-01';
 
 describe('addFlagEmoji 透传到内置 Clash 生成器', () => {
     it('addFlagEmoji: false 时不加国旗', () => {
         const name = yaml.load(generateBuiltinClashConfig(NODE, { addFlagEmoji: false })).proxies[0]
             .name;
-        expect(name).toBe('US-DMC-LAX-01');
+        expect(name).toBe('US-AAA-BBB-01');
     });
 
     it('addFlagEmoji: true 时加国旗', () => {
         const name = yaml.load(generateBuiltinClashConfig(NODE, { addFlagEmoji: true })).proxies[0]
             .name;
-        expect(name).toBe('🇺🇸 US-DMC-LAX-01');
+        expect(name).toBe('🇺🇸 US-AAA-BBB-01');
     });
 
     it('未传 addFlagEmoji 时默认加国旗（保持向后兼容）', () => {
         const name = yaml.load(generateBuiltinClashConfig(NODE, {})).proxies[0].name;
-        expect(name).toBe('🇺🇸 US-DMC-LAX-01');
+        expect(name).toBe('🇺🇸 US-AAA-BBB-01');
     });
 });
 
