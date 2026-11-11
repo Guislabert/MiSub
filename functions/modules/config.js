@@ -32,6 +32,9 @@ export const DEFAULT_SETTINGS = {
     NotifyThresholdPercent: 90,
     enableTrafficNode: false,
     enableFlagEmoji: true,
+    // 国旗与节点名之间的分隔符。默认空格（`🇺🇸 A100-US-...`）；
+    // 设为 '' 得到无空格形式（`🇺🇸A100-US-...`）。
+    flagEmojiSeparator: ' ',
     enablePublicPage: true,
     storageType: 'kv',
     // 新增：借鉴Sub-Store和miaomiaowu的功能

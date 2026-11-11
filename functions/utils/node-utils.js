@@ -158,9 +158,18 @@ export function extractRegionFromNodeName(nodeName) {
 
 /**
  * 为节点链接添加国旗 Emoji
+ *
+ * @param {string} link - 节点链接
+ * @param {Object} [options]
+ * @param {string} [options.separator=' '] - 国旗与节点名之间的分隔符。
+ *   默认空格（`🇺🇸 A100-US-...`）；设为 `''` 可得无空格形式
+ *   （`🇺🇸A100-US-...`）。注意：无空格形式下国旗与名字粘连，
+ *   若同时用 include-all-proxies，mihomo 的 slices.Sort 会按国旗
+ *   码位分组；需配合显式列名（expand-include-all-proxies）才能锁住顺序。
  */
-export function addFlagEmoji(link) {
+export function addFlagEmoji(link, options = {}) {
     if (!link) return link;
+    const separator = typeof options?.separator === 'string' ? options.separator : ' ';
     const appendEmoji = (name) => {
         if (!name) return name;
 
@@ -172,7 +181,7 @@ export function addFlagEmoji(link) {
         const metadata = extractNodeMetadata(name);
         if (!metadata.flag) return name;
 
-        return `${metadata.flag} ${name}`;
+        return `${metadata.flag}${separator}${name}`;
     };
 
     if (link.toLowerCase().startsWith('ssr://')) {

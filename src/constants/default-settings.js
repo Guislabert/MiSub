@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS = {
     NotifyThresholdPercent: 90,
     enableTrafficNode: false,
     enableFlagEmoji: true,
+    flagEmojiSeparator: ' ',
     enablePublicPage: true,
     storageType: 'kv',
     autoUpdateInterval: 0, // 分钟，0表示禁用自动更新

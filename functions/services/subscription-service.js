@@ -985,8 +985,11 @@ export async function generateCombinedNodeList(
     currentLines = currentLines.map((line) => sanitizeNodeForYaml(line));
 
     // 3.2 最终智能化补齐 (Flag Emoji)
+    // 分隔符可通过 config.flagEmojiSeparator 配置（默认空格；'' 为无空格粘连形式）
+    const flagSeparator =
+        typeof config?.flagEmojiSeparator === 'string' ? config.flagEmojiSeparator : ' ';
     const finalLines = shouldKeepEmoji
-        ? currentLines.map((line) => addFlagEmoji(line))
+        ? currentLines.map((line) => addFlagEmoji(line, { separator: flagSeparator }))
         : currentLines;
 
     // --- 阶段 4: 结果拼装与返回 ---
