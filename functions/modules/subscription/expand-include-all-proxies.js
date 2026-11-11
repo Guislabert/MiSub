@@ -21,16 +21,7 @@
  *   保留 `include-all-proxies` 更省事，也避免节点很多时 YAML 膨胀。
  */
 
-/** 需要保留 include-all-proxies 的组类型（测速类，顺序无关） */
-const KEEP_INCLUDE_ALL_TYPES = new Set([
-    'load-balance',
-    'url-test',
-    'fallback',
-    'select',
-    'relay',
-]);
-
-/** 真正需要展开的组类型 */
+/** 需要展开为显式列名的组类型（仅 select，理由见文件头） */
 const EXPAND_TYPES = new Set(['select']);
 
 /** 内置策略名，不参与节点展开 */
@@ -177,7 +168,6 @@ export const __test__ = {
     shouldExpandGroup,
     applyFilter,
     applyExcludeFilter,
-    KEEP_INCLUDE_ALL_TYPES,
     EXPAND_TYPES,
     BUILTIN_POLICIES,
 };
