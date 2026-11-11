@@ -21,6 +21,7 @@ import yaml from 'js-yaml';
 import { urlsToClashProxies } from '../utils/url-to-clash.js';
 import { resolveSafeDnsConfig } from '../modules/subscription/safe-dns.js';
 import { applyMihomoChainProxyToClashConfig } from '../modules/subscription/mihomo-chain-proxy.js';
+import { expandIncludeAllProxies } from '../modules/subscription/expand-include-all-proxies.js';
 
 function getTemplateExtension(templateUrl) {
     const raw = typeof templateUrl === 'string' ? templateUrl.trim() : '';
@@ -126,6 +127,15 @@ export function renderClashYamlProfileTemplate(templateText, nodeList, options =
 
     const chainConfigs = normalizeYamlChainConfigs(config);
     config.proxies = proxies;
+
+    // 把 select 组的 include-all-proxies 展开成显式列名，锁住节点顺序。
+    // mihomo 对 include-all-proxies 走 slices.Sort(节点名) 字节序重排，
+    // 国旗 emoji 在行首时会按国家分组（🇦🇺E500 排第一）；显式列名走
+    // getProxies() 不排序，顺序完全可控。详见 expand-include-all-proxies.js。
+    expandIncludeAllProxies(config, {
+        nodeNames: proxies.map((proxy) => proxy?.name).filter(Boolean),
+    });
+
     if (chainConfigs.length > 0) {
         applyMihomoChainProxyToClashConfig(config, {
             chainConfigs,
