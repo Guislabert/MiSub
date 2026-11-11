@@ -1,5 +1,16 @@
 name: 自动同步上游 MiSub
 
+# 策略：merge，不 reset。
+#
+# 为什么不用 reset --hard：
+#   本 fork 有本地提交（节点排序 / emoji 相关修复），reset --hard upstream/main
+#   会无条件丢弃它们，且 force push 后无法从远端找回。
+#   改用 merge 后，上游更新正常合入，本地提交保留；冲突时工作流失败并报警，
+#   而不是静默丢代码。
+#
+# 历史：原 fork-sync.yml 用 reset --hard + force push，每天 06:00 跑，
+#       会覆盖本地提交。已删除，统一走本工作流的 merge 策略。
+
 on:
   schedule:
     # 每天北京时间 08:00（UTC 00:00）检查一次
@@ -9,6 +20,10 @@ on:
 permissions:
   contents: write  # 允许 push 回 fork
 
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -17,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
       - name: 配置 git 身份
         run: |
@@ -25,15 +41,44 @@ jobs:
 
       - name: 同步上游 imzyb/MiSub
         run: |
-          git remote add upstream https://github.com/imzyb/MiSub.git
-          git fetch upstream main
-          LOCAL=$(git rev-parse HEAD)
-          REMOTE=$(git rev-parse upstream/main)
-          if [ "$LOCAL" = "$REMOTE" ]; then
-            echo "✅ 已是最新，无需同步"
+          set -euo pipefail
+
+          # 幂等：已存在则改 URL，避免重复 add 报错
+          if git remote get-url upstream >/dev/null 2>&1; then
+            git remote set-url upstream https://github.com/imzyb/MiSub.git
           else
-            echo "🔁 检测到上游更新，开始同步..."
-            git merge upstream/main --no-edit
-            git push origin main
-            echo "✅ 已推送，Cloudflare Pages 将自动重新构建"
+            git remote add upstream https://github.com/imzyb/MiSub.git
           fi
+          git fetch upstream main
+
+          # 正确判断：上游是否有本 fork 尚未包含的提交
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "✅ 已包含上游全部提交，无需同步"
+            echo "   本地领先上游 $(git rev-list --count upstream/main..HEAD) 个提交（保留）"
+            exit 0
+          fi
+
+          echo "🔁 上游有 $(git rev-list --count HEAD..upstream/main) 个新提交，开始 merge..."
+          echo "   本地领先上游 $(git rev-list --count upstream/main..HEAD) 个提交（将保留）"
+
+          if git merge upstream/main --no-edit; then
+            git push origin main
+            echo "✅ 合并完成并已推送，Cloudflare Pages 将自动重新构建"
+          else
+            echo "::error title=合并冲突::上游更新与本地提交冲突，需人工解决。本地提交未被丢弃。"
+            git merge --abort || true
+            exit 1
+          fi
+
+      - name: 合并后自检
+        if: success()
+        run: |
+          set -euo pipefail
+          # 确认关键本地提交仍在历史中
+          for sha in 76851de d866a09 e5691b1; do
+            if git merge-base --is-ancestor "$sha" HEAD 2>/dev/null; then
+              echo "✅ $sha 仍在历史中"
+            else
+              echo "::warning title=本地提交缺失::$sha 不在当前历史中"
+            fi
+          done
